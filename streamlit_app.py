@@ -12,13 +12,17 @@ st.sidebar.header("User Input Features")
 
 # Allow the user to input a new customer's data
 st.sidebar.write("## Add New Customer Data")
+
+# Auto-increment CustomerID by taking the max ID in the dataset
+new_customer_id = mall_df['CustomerID'].max() + 1
+new_gender = st.sidebar.selectbox("Gender", options=["Male", "Female"])
 new_age = st.sidebar.number_input("Age", min_value=18, max_value=70, value=25)
 new_income = st.sidebar.number_input("Annual Income (k$)", min_value=15, max_value=140, value=50)
 new_spending_score = st.sidebar.number_input("Spending Score (1-100)", min_value=1, max_value=100, value=50)
 
 # Allow the user to submit new data
 if st.sidebar.button("Add Customer"):
-    new_data = {'CustomerID': [len(mall_df) + 1], 'Genre': ['Unknown'], 'Age': [new_age], 
+    new_data = {'CustomerID': [new_customer_id], 'Genre': [new_gender], 'Age': [new_age], 
                 'Annual Income (k$)': [new_income], 'Spending Score (1-100)': [new_spending_score]}
     new_customer_df = pd.DataFrame(new_data)
     mall_df = pd.concat([mall_df, new_customer_df], ignore_index=True)
@@ -78,3 +82,19 @@ cluster_choice = st.sidebar.selectbox("Select Cluster to View Details", mall_df[
 # Display selected cluster details
 st.write(f"### Selected Cluster {cluster_choice} Details")
 st.write(mall_df[mall_df["Cluster"] == cluster_choice])
+
+# Add a pie chart to visualize gender distribution in the clusters
+st.write(f"### Gender Distribution in Cluster {cluster_choice}")
+cluster_gender_dist = mall_df[mall_df["Cluster"] == cluster_choice]["Genre"].value_counts()
+fig2, ax2 = plt.subplots()
+cluster_gender_dist.plot(kind='pie', autopct='%1.1f%%', ax=ax2, colors=['#66b3ff','#99ff99'])
+plt.title(f"Gender Distribution in Cluster {cluster_choice}")
+plt.ylabel('')
+st.pyplot(fig2)
+
+# Visualizing income vs. spending score with clusters
+st.write("### Income vs Spending Score across Clusters")
+fig3, ax3 = plt.subplots()
+sns.scatterplot(x="Annual Income (k$)", y="Spending Score (1-100)", hue="Cluster", data=mall_df, palette="deep", ax=ax3)
+plt.title("Income vs Spending Score")
+st.pyplot(fig3)
