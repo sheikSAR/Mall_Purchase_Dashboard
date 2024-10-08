@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans
 
 # Load the dataset (ensure the dataset is in the same directory or provide the correct path)
 mall_df = pd.read_csv(
-    "your_dataset.csv"
+    "Mall_Customers.csv"
 )  # Replace with the correct path or upload the dataset separately
 
 # Sidebar for user input
