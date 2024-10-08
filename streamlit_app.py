@@ -27,19 +27,34 @@ if st.sidebar.button("Add Customer"):
     new_customer_df = pd.DataFrame(new_data)
     mall_df = pd.concat([mall_df, new_customer_df], ignore_index=True)
 
-# KMeans Clustering
-X = mall_df[["Annual Income (k$)", "Spending Score (1-100)"]]
-kmeans = KMeans(n_clusters=5, init="k-means++", random_state=42)
-mall_df["Cluster"] = kmeans.fit_predict(X)
+# --- Filter options ---
+st.sidebar.write("## Filter Data")
+age_range = st.sidebar.slider("Select Age Range", min_value=int(mall_df["Age"].min()), 
+                              max_value=int(mall_df["Age"].max()), value=(18, 70))
+income_range = st.sidebar.slider("Select Income Range (k$)", min_value=int(mall_df["Annual Income (k$)"].min()), 
+                                 max_value=int(mall_df["Annual Income (k$)"].max()), value=(15, 140))
+spending_range = st.sidebar.slider("Select Spending Score Range (1-100)", 
+                                   min_value=int(mall_df["Spending Score (1-100)"].min()), 
+                                   max_value=int(mall_df["Spending Score (1-100)"].max()), value=(1, 100))
 
-# Visualization of clusters with descriptions
+# Apply filters to the dataframe
+filtered_df = mall_df[(mall_df["Age"].between(age_range[0], age_range[1])) &
+                      (mall_df["Annual Income (k$)"].between(income_range[0], income_range[1])) &
+                      (mall_df["Spending Score (1-100)"].between(spending_range[0], spending_range[1]))]
+
+# KMeans Clustering
+X = filtered_df[["Annual Income (k$)", "Spending Score (1-100)"]]
+kmeans = KMeans(n_clusters=5, init="k-means++", random_state=42)
+filtered_df["Cluster"] = kmeans.fit_predict(X)
+
+# --- Visualization of clusters with descriptions ---
 st.write("### Customer Segments with KMeans Clustering")
 fig, ax = plt.subplots()
 sns.scatterplot(
     x="Annual Income (k$)",
     y="Spending Score (1-100)",
     hue="Cluster",
-    data=mall_df,
+    data=filtered_df,
     palette="viridis",
     ax=ax,
 )
@@ -69,7 +84,7 @@ st.pyplot(fig)
 
 # Display cluster details
 st.write("### Cluster Information")
-cluster_info = mall_df.groupby("Cluster").agg(
+cluster_info = filtered_df.groupby("Cluster").agg(
     avg_income=("Annual Income (k$)", "mean"),
     avg_spending=("Spending Score (1-100)", "mean"),
     count=("CustomerID", "count"),
@@ -77,15 +92,15 @@ cluster_info = mall_df.groupby("Cluster").agg(
 st.write(cluster_info)
 
 # User interaction: Select cluster
-cluster_choice = st.sidebar.selectbox("Select Cluster to View Details", mall_df["Cluster"].unique())
+cluster_choice = st.sidebar.selectbox("Select Cluster to View Details", filtered_df["Cluster"].unique())
 
 # Display selected cluster details
 st.write(f"### Selected Cluster {cluster_choice} Details")
-st.write(mall_df[mall_df["Cluster"] == cluster_choice])
+st.write(filtered_df[filtered_df["Cluster"] == cluster_choice])
 
 # Add a pie chart to visualize gender distribution in the clusters
 st.write(f"### Gender Distribution in Cluster {cluster_choice}")
-cluster_gender_dist = mall_df[mall_df["Cluster"] == cluster_choice]["Genre"].value_counts()
+cluster_gender_dist = filtered_df[filtered_df["Cluster"] == cluster_choice]["Genre"].value_counts()
 fig2, ax2 = plt.subplots()
 cluster_gender_dist.plot(kind='pie', autopct='%1.1f%%', ax=ax2, colors=['#66b3ff','#99ff99'])
 plt.title(f"Gender Distribution in Cluster {cluster_choice}")
@@ -95,6 +110,6 @@ st.pyplot(fig2)
 # Visualizing income vs. spending score with clusters
 st.write("### Income vs Spending Score across Clusters")
 fig3, ax3 = plt.subplots()
-sns.scatterplot(x="Annual Income (k$)", y="Spending Score (1-100)", hue="Cluster", data=mall_df, palette="deep", ax=ax3)
+sns.scatterplot(x="Annual Income (k$)", y="Spending Score (1-100)", hue="Cluster", data=filtered_df, palette="deep", ax=ax3)
 plt.title("Income vs Spending Score")
 st.pyplot(fig3)
