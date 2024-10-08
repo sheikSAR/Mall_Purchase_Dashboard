@@ -7,6 +7,12 @@ from sklearn.cluster import KMeans
 # Load the dataset
 mall_df = pd.read_csv("Mall_Customers.csv")
 
+# Ensure correct data types
+mall_df['Annual Income (k$)'] = pd.to_numeric(mall_df['Annual Income (k$)'], errors='coerce')
+mall_df['Spending Score (1-100)'] = pd.to_numeric(mall_df['Spending Score (1-100)'], errors='coerce')
+mall_df['Age'] = pd.to_numeric(mall_df['Age'], errors='coerce')
+mall_df = mall_df.dropna()  # Drop rows with any missing values
+
 # Sidebar for user input
 st.sidebar.header("User Input Features")
 
@@ -73,24 +79,7 @@ plt.ylabel("Spending Score (1-100)", color="white")
 plt.legend()
 st.pyplot(fig)
 
-# Display cluster details
-st.write("### Cluster Information (Filtered Data)")
-cluster_info = filtered_df.groupby("Cluster").agg(
-    avg_income=("Annual Income (k$)", "mean"),
-    avg_spending=("Spending Score (1-100)", "mean"),
-    count=("CustomerID", "count"),
-)
-st.write(cluster_info)
-
-# User interaction: Select cluster
-cluster_choice = st.sidebar.selectbox("Select Cluster to View Details", mall_df["Cluster"].unique())
-
-# Display selected cluster details
-st.write(f"### Selected Cluster {cluster_choice} Details")
-st.write(filtered_df[filtered_df["Cluster"] == cluster_choice])
-
 # --- Additional Visualizations ---
-
 # 1. Spending Score Distribution by Gender
 st.write(f"### Spending Score by Gender")
 fig2, ax2 = plt.subplots()
