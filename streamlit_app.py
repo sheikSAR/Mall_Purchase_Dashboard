@@ -98,6 +98,8 @@ cluster_choice = st.sidebar.selectbox("Select Cluster to View Details", filtered
 st.write(f"### Selected Cluster {cluster_choice} Details")
 st.write(filtered_df[filtered_df["Cluster"] == cluster_choice])
 
+# --- Additional Visualizations ---
+
 # Add a pie chart to visualize gender distribution in the clusters
 st.write(f"### Gender Distribution in Cluster {cluster_choice}")
 cluster_gender_dist = filtered_df[filtered_df["Cluster"] == cluster_choice]["Genre"].value_counts()
@@ -107,9 +109,16 @@ plt.title(f"Gender Distribution in Cluster {cluster_choice}")
 plt.ylabel('')
 st.pyplot(fig2)
 
+# Add bar chart for Age distribution in selected cluster
+st.write(f"### Age Distribution in Cluster {cluster_choice}")
+fig3, ax3 = plt.subplots()
+sns.histplot(filtered_df[filtered_df["Cluster"] == cluster_choice]["Age"], bins=10, kde=True, ax=ax3)
+plt.title(f"Age Distribution in Cluster {cluster_choice}")
+st.pyplot(fig3)
+
 # Visualizing income vs. spending score with clusters
 st.write("### Income vs Spending Score across Clusters")
-fig3, ax3 = plt.subplots()
-sns.scatterplot(x="Annual Income (k$)", y="Spending Score (1-100)", hue="Cluster", data=filtered_df, palette="deep", ax=ax3)
+fig4, ax4 = plt.subplots()
+sns.scatterplot(x="Annual Income (k$)", y="Spending Score (1-100)", hue="Cluster", data=filtered_df, palette="deep", ax=ax4)
 plt.title("Income vs Spending Score")
-st.pyplot(fig3)
+st.pyplot(fig4)
